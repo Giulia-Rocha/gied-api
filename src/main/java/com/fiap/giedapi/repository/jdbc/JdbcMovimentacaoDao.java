@@ -4,11 +4,12 @@ import com.fiap.giedapi.config.OracleConnectionFactory;
 import com.fiap.giedapi.repository.MovimentacaoDao;
 import com.fiap.giedapi.domain.enums.TipoMovimentacao;
 import com.fiap.giedapi.domain.model.Movimentacao;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
+@Repository
 public class JdbcMovimentacaoDao implements MovimentacaoDao {
     @Override
     public void salvar(Movimentacao movimentacao) {

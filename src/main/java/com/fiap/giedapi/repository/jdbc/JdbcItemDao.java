@@ -3,6 +3,7 @@ package com.fiap.giedapi.repository.jdbc;
 import com.fiap.giedapi.config.OracleConnectionFactory;
 import com.fiap.giedapi.repository.ItemDao;
 import com.fiap.giedapi.domain.model.Item;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
+@Repository
 public class JdbcItemDao implements ItemDao {
     @Override
     public Long salvar(Item item) {

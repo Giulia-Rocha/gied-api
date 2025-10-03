@@ -3,9 +3,10 @@ package com.fiap.giedapi.service;
 import com.fiap.giedapi.repository.UsuarioDao;
 import com.fiap.giedapi.domain.model.Usuario;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
+@Service
 public class UsuarioService {
     private final UsuarioDao usuarioDao;
 

@@ -8,11 +8,12 @@ import com.fiap.giedapi.domain.model.Item;
 import com.fiap.giedapi.domain.model.LoteEstoque;
 import com.fiap.giedapi.domain.model.Movimentacao;
 import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+@Service
 public class ItemService {
     private final ItemDao itemDao ;
     private final LoteEstoqueDao loteEstoqueDao;
