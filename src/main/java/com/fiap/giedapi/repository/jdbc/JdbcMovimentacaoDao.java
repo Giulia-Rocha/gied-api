@@ -14,7 +14,7 @@ public class JdbcMovimentacaoDao implements MovimentacaoDao {
     @Override
     public void salvar(Movimentacao movimentacao) {
         String sqlId = "SELECT SEQ_MOV.NEXTVAL FROM DUAL";
-        String sqlInsert = "INSERT INTO MOVIMENTACAO (ID_MOVIMENTACAO, DT_HR_MOVIMENTACAO, NR_QUANTIDADE_MOV, TP_MOVIMENTACAO) VALUES (?, ?, ?, ?)";
+        String sqlInsert = "INSERT INTO MOVIMENTACAO (ID_MOVIMENTACAO, DT_HR_MOVIMENTACAO, NR_QUANTIDADE_MOV, ID_TP_MOVIMENTACAO, ID_LOTE) VALUES (?, ?, ?, ?,?)";
 
         try (Connection con = OracleConnectionFactory.getConnection();
              PreparedStatement stId = con.prepareStatement(sqlId);
@@ -32,6 +32,7 @@ public class JdbcMovimentacaoDao implements MovimentacaoDao {
                 stInsert.setInt(3, movimentacao.getQuantidade());
                 int tipoId = movimentacao.getTipoMovimentacao() == TipoMovimentacao.ENTRADA ? 1 : 2;
                 stInsert.setInt(4, tipoId);
+                stInsert.setLong(5, movimentacao.getLote().getId());
                 stInsert.executeUpdate();
             }
 

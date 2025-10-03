@@ -9,15 +9,25 @@ public class Movimentacao {
     private LocalDateTime dataHora;
     private Integer quantidade;
     private TipoMovimentacao tipoMovimentacao;
+    private LoteEstoque lote;
 
-    public Movimentacao(Long id, LocalDateTime dataHora, Integer quantidade, TipoMovimentacao tipoMovimentacao) {
+    public Movimentacao(Long id, LocalDateTime dataHora, Integer quantidade, TipoMovimentacao tipoMovimentacao,  LoteEstoque lote) {
         this.id = id;
         this.dataHora = dataHora;
         this.quantidade = quantidade;
         this.tipoMovimentacao = tipoMovimentacao;
+        this.lote = lote;
     }
 
     public Movimentacao() {}
+
+    public LoteEstoque getLote() {
+        return lote;
+    }
+
+    public void setLote(LoteEstoque lote) {
+        this.lote = lote;
+    }
 
     public Long getId() {
         return id;

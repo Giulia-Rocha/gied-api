@@ -1,18 +1,39 @@
 package com.fiap.giedapi.controller;
 
 
-import com.fiap.giedapi.service.UsuarioService;
+import com.fiap.giedapi.domain.model.Item;
+import com.fiap.giedapi.domain.model.LoteEstoque;
+import com.fiap.giedapi.dto.ItemEntradaDTO;
+import com.fiap.giedapi.dto.ItemResponseDTO;
+import com.fiap.giedapi.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/item")
 public class ItemController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private ItemService service;
 
+    @GetMapping
+    public ResponseEntity<List<Item>> listarTodoEstoque(){
+        List<Item> items = service.listarEstoque();
+        if (items.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return ResponseEntity.ok().body(items);
+    }
 
+    @PostMapping("/entrada")
+    public ResponseEntity<ItemEntradaDTO> salvar(@RequestBody ItemEntradaDTO dto){
+
+     service.registrarEntrada(dto.id(), dto.quantidade(), dto.numeroLote(), dto.dataValidade());
+     return new ResponseEntity<>(dto, HttpStatus.CREATED);
+    }
 }

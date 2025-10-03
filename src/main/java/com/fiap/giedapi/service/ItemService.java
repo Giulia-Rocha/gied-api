@@ -44,57 +44,57 @@ public class ItemService {
             throw new IllegalStateException("Produto com ID " + idItem + " não encontrado no catálogo. Cadastre o produto primeiro.");
         }
 
-        loteEstoqueDao.findByItemAndId(idItem,numeroLote)
-                .ifPresentOrElse(
-                        loteExistente ->{
-                            if(!loteExistente.getDataValidade().equals(dataValidade)){
-                                throw new IllegalStateException("Inconsistência de dados: a data de validade do lote não corresponde à já cadastrada.");
-                            }
-                            loteExistente.setQuantidade(loteExistente.getQuantidade()+quantidade);
-                            loteEstoqueDao.atualizar(loteExistente);
-                        },
-                        ()->{
-                            LoteEstoque novoLote = new LoteEstoque(null,item, numeroLote, dataValidade, quantidade);
-                            loteEstoqueDao.salvar(novoLote);
-                        }
-                );
-        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.ENTRADA);
-        movimentacaoDao.salvar(mov);
-
-    }
-    public void RegistrarSaida(Long idItem, int quantidade){
-        if (quantidade <= 0) {
-            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
-        }
-
-        List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
-
-        int estoqueTotal = lotesOrdenados.stream()
-                .mapToInt(LoteEstoque::getQuantidade)
-                .sum();
-        if(estoqueTotal <= quantidade){
-            throw new IllegalStateException("Estoque insuficiente. Total disponivel " + estoqueTotal + ".");
-        }
-        int quantidadeFinal = quantidade;
-
-        for (LoteEstoque lote : lotesOrdenados) {
-            if(lote.getQuantidade() >= quantidadeFinal){
-                lote.setQuantidade(lote.getQuantidade() - quantidadeFinal);
-                quantidadeFinal = 0;
-                loteEstoqueDao.atualizar(lote);
-                break;
-            }else{
-                quantidadeFinal -= lote.getQuantidade();
-                lote.setQuantidade(0);
-                loteEstoqueDao.atualizar(lote);
+        LoteEstoque loteProcessado = loteEstoqueDao.findByItemAndId(idItem,numeroLote)
+                .map(loteExistente -> {
+            if (!loteExistente.getDataValidade().equals(dataValidade)) {
+                throw new IllegalStateException("Inconsistência de dados: a data de validade do lote não corresponde à já cadastrada.");
             }
-        }
-        if(quantidadeFinal > 0){
-            throw new RuntimeException("Erro inesperado no cálculo de baixa de estoque. Estoque insuficiente.");
-        }
-        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.RETIRADA);
+            loteExistente.setQuantidade(loteExistente.getQuantidade() + quantidade);
+            loteEstoqueDao.atualizar(loteExistente);
+            return loteExistente;
+        })
+                .orElseGet(() -> {
+                    LoteEstoque novoLote = new LoteEstoque(null, item, numeroLote, dataValidade, quantidade);
+                    loteEstoqueDao.salvar(novoLote);
+                    return novoLote;
+                });
+        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.ENTRADA, loteProcessado);
         movimentacaoDao.salvar(mov);
+
     }
+//    public void RegistrarSaida(Long idItem, int quantidade){
+//        if (quantidade <= 0) {
+//            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
+//        }
+//
+//        List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
+//
+//        int estoqueTotal = lotesOrdenados.stream()
+//                .mapToInt(LoteEstoque::getQuantidade)
+//                .sum();
+//        if(estoqueTotal <= quantidade){
+//            throw new IllegalStateException("Estoque insuficiente. Total disponivel " + estoqueTotal + ".");
+//        }
+//        int quantidadeFinal = quantidade;
+//
+//        for (LoteEstoque lote : lotesOrdenados) {
+//            if(lote.getQuantidade() >= quantidadeFinal){
+//                lote.setQuantidade(lote.getQuantidade() - quantidadeFinal);
+//                quantidadeFinal = 0;
+//                loteEstoqueDao.atualizar(lote);
+//                break;
+//            }else{
+//                quantidadeFinal -= lote.getQuantidade();
+//                lote.setQuantidade(0);
+//                loteEstoqueDao.atualizar(lote);
+//            }
+//        }
+//        if(quantidadeFinal > 0){
+//            throw new RuntimeException("Erro inesperado no cálculo de baixa de estoque. Estoque insuficiente.");
+//        }
+//        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.RETIRADA, lote);
+//        movimentacaoDao.salvar(mov);
+//    }
     public List<LoteEstoque> ConsultarEstoque(Long idItem){
         //1. validação do id
         Item item = itemDao.getById(idItem);
