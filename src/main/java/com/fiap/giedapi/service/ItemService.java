@@ -62,40 +62,40 @@ public class ItemService {
         movimentacaoDao.salvar(mov);
 
     }
-//    public void RegistrarSaida(Long idItem, int quantidade){
-//        if (quantidade <= 0) {
-//            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
-//        }
-//
-//        List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
-//
-//        int estoqueTotal = lotesOrdenados.stream()
-//                .mapToInt(LoteEstoque::getQuantidade)
-//                .sum();
-//        if(estoqueTotal <= quantidade){
-//            throw new IllegalStateException("Estoque insuficiente. Total disponivel " + estoqueTotal + ".");
-//        }
-//        int quantidadeFinal = quantidade;
-//
-//        for (LoteEstoque lote : lotesOrdenados) {
-//            if(lote.getQuantidade() >= quantidadeFinal){
-//                lote.setQuantidade(lote.getQuantidade() - quantidadeFinal);
-//                quantidadeFinal = 0;
-//                loteEstoqueDao.atualizar(lote);
-//                break;
-//            }else{
-//                quantidadeFinal -= lote.getQuantidade();
-//                lote.setQuantidade(0);
-//                loteEstoqueDao.atualizar(lote);
-//            }
-//        }
-//        if(quantidadeFinal > 0){
-//            throw new RuntimeException("Erro inesperado no cálculo de baixa de estoque. Estoque insuficiente.");
-//        }
-//        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.RETIRADA, lote);
-//        movimentacaoDao.salvar(mov);
-//    }
-    public List<LoteEstoque> ConsultarEstoque(Long idItem){
+    public void registrarSaida(Long idItem, int quantidade){
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
+        }
+
+        List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
+
+        int estoqueTotal = lotesOrdenados.stream()
+                .mapToInt(LoteEstoque::getQuantidade)
+                .sum();
+        if(estoqueTotal <= quantidade){
+            throw new IllegalStateException("Estoque insuficiente. Total disponivel " + estoqueTotal + ".");
+        }
+        int quantidadeFinal = quantidade;
+
+        for (LoteEstoque lote : lotesOrdenados) {
+            if(lote.getQuantidade() >= quantidadeFinal){
+                lote.setQuantidade(lote.getQuantidade() - quantidadeFinal);
+                quantidadeFinal = 0;
+                loteEstoqueDao.atualizar(lote);
+                break;
+            }else{
+                quantidadeFinal -= lote.getQuantidade();
+                lote.setQuantidade(0);
+                loteEstoqueDao.atualizar(lote);
+            }
+        }
+        if(quantidadeFinal > 0){
+            throw new RuntimeException("Erro inesperado no cálculo de baixa de estoque. Estoque insuficiente.");
+        }
+        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.RETIRADA, lote);
+        movimentacaoDao.salvar(mov);
+    }
+    public ConsultaEstoqueDTO consultarEstoque(Long idItem){
         //1. validação do id
         Item item = itemDao.getById(idItem);
         if(item==null){
@@ -103,7 +103,7 @@ public class ItemService {
         }
         //2.pede ao dao para buscar a lista de items com esse id
         List<LoteEstoque> lotes = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
-        return new ConsultaEstoqueDTO(item, lotes).lotes();
+        return new ConsultaEstoqueDTO(item, lotes);
 
     }
     public List<Item> listarEstoque(){
