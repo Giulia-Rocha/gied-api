@@ -7,6 +7,8 @@ import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
 import com.fiap.giedapi.dto.ItemEntradaDTO;
 import com.fiap.giedapi.dto.ItemResponseDTO;
 import com.fiap.giedapi.dto.ItemSaidaDTO;
+import com.fiap.giedapi.dto.mappers.ItemMapper;
+import com.fiap.giedapi.dto.response.ItemEstoqueBaixoDTO;
 import com.fiap.giedapi.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,6 +58,16 @@ public class ItemController {
                 "Quantidade", dto.quantidade().toString()
         );
         return  ResponseEntity.ok(response);
+    }
+    @GetMapping("/estoque-baixo")
+    public ResponseEntity<List<ItemEstoqueBaixoDTO>> listarEstoqueBaixo(){
+       List<Item> items = service.listarEstoqueBaixo();
+       if (items.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+       }
+       List<ItemEstoqueBaixoDTO> response = ItemMapper.toEstoqueBaixoDTO(items);
+       return ResponseEntity.ok(response);
+
     }
 
 
