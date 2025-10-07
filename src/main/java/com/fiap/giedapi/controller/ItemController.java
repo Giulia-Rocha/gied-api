@@ -3,6 +3,7 @@ package com.fiap.giedapi.controller;
 
 import com.fiap.giedapi.domain.model.Item;
 import com.fiap.giedapi.domain.model.LoteEstoque;
+import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
 import com.fiap.giedapi.dto.ItemEntradaDTO;
 import com.fiap.giedapi.dto.ItemResponseDTO;
 import com.fiap.giedapi.dto.ItemSaidaDTO;
@@ -34,12 +35,9 @@ public class ItemController {
         return ResponseEntity.ok().body(items);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<ItemResponseDTO> findById(@PathVariable Long id){
-        List<LoteEstoque> response = service.consultarEstoque(id);
-        List<ItemResponseDTO>responseDTO = new ArrayList<>();
-        responseDTO.forEach(item -> {})
-
-        return ResponseEntity.ok()
+    public ResponseEntity<ConsultaEstoqueDTO> findById(@PathVariable Long id){
+        ConsultaEstoqueDTO response = service.consultarEstoque(id);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/entrada")

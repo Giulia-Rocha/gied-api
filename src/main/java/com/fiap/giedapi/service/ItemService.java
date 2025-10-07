@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Service
 public class ItemService {
@@ -62,37 +63,84 @@ public class ItemService {
         movimentacaoDao.salvar(mov);
 
     }
-    public void registrarSaida(Long idItem, int quantidade){
+    public void registrarSaida(Long idItem, int quantidade) {
+        // 1. Validações de entrada
         if (quantidade <= 0) {
             throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
         }
 
+        // 2. Verificar se o item existe
+        Item item = itemDao.getById(idItem);
+        if (item == null) {
+            throw new IllegalStateException("Produto com ID " + idItem + " não encontrado no catálogo.");
+        }
+
+        // 3. Buscar lotes ordenados por validade (FIFO)
         List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
 
+        if (lotesOrdenados.isEmpty()) {
+            throw new IllegalStateException("Não há estoque disponível para este item.");
+        }
+
+        // 4. Calcular estoque total
         int estoqueTotal = lotesOrdenados.stream()
                 .mapToInt(LoteEstoque::getQuantidade)
                 .sum();
-        if(estoqueTotal <= quantidade){
-            throw new IllegalStateException("Estoque insuficiente. Total disponivel " + estoqueTotal + ".");
+
+        if (estoqueTotal < quantidade) {
+            throw new IllegalStateException(
+                    "Estoque insuficiente. Disponível: " + estoqueTotal +
+                            ", Solicitado: " + quantidade
+            );
         }
-        int quantidadeFinal = quantidade;
+
+        // 5. Processar baixa nos lotes (FIFO) e rastrear lotes afetados
+        List<LoteEstoque> lotesProcessados = new ArrayList<>();
+        int quantidadeRestante = quantidade;
 
         for (LoteEstoque lote : lotesOrdenados) {
-            if(lote.getQuantidade() >= quantidadeFinal){
-                lote.setQuantidade(lote.getQuantidade() - quantidadeFinal);
-                quantidadeFinal = 0;
-                loteEstoqueDao.atualizar(lote);
-                break;
-            }else{
-                quantidadeFinal -= lote.getQuantidade();
-                lote.setQuantidade(0);
-                loteEstoqueDao.atualizar(lote);
+            if (quantidadeRestante <= 0) {
+                break; // Já processou toda a quantidade necessária
             }
+
+            int quantidadeAnterior = lote.getQuantidade();
+
+            if (lote.getQuantidade() >= quantidadeRestante) {
+                // Este lote tem quantidade suficiente para completar a saída
+                lote.setQuantidade(lote.getQuantidade() - quantidadeRestante);
+                quantidadeRestante = 0;
+            } else {
+                // Este lote não tem quantidade suficiente, zera e continua
+                quantidadeRestante -= lote.getQuantidade();
+                lote.setQuantidade(0);
+            }
+
+            // Atualiza o lote no banco
+            loteEstoqueDao.atualizar(lote);
+
+            // Adiciona à lista de lotes processados
+            lotesProcessados.add(lote);
         }
-        if(quantidadeFinal > 0){
-            throw new RuntimeException("Erro inesperado no cálculo de baixa de estoque. Estoque insuficiente.");
+
+        // 6. Verificação de segurança (não deveria acontecer)
+        if (quantidadeRestante > 0) {
+            throw new RuntimeException(
+                    "Erro inesperado no cálculo de baixa de estoque. " +
+                            "Quantidade não processada: " + quantidadeRestante
+            );
         }
-        Movimentacao mov = new Movimentacao(null, LocalDateTime.now(), quantidade, TipoMovimentacao.RETIRADA, lote);
+
+        // 7. Registrar movimentação usando o primeiro lote afetado
+        // (ou você pode criar um relacionamento N:N entre Movimentacao e Lote)
+        LoteEstoque lotePrincipal = lotesProcessados.get(0);
+
+        Movimentacao mov = new Movimentacao(
+                null,
+                LocalDateTime.now(),
+                quantidade,
+                TipoMovimentacao.RETIRADA,
+                lotePrincipal
+        );
         movimentacaoDao.salvar(mov);
     }
     public ConsultaEstoqueDTO consultarEstoque(Long idItem){
