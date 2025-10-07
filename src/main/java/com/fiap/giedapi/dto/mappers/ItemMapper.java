@@ -3,7 +3,7 @@ package com.fiap.giedapi.dto.mappers;
 
 import com.fiap.giedapi.domain.model.Item;
 import com.fiap.giedapi.domain.vo.EstoqueInfo;
-import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
+import com.fiap.giedapi.dto.response.ConsultaEstoqueDTO;
 import com.fiap.giedapi.dto.response.ItemEstoqueBaixoDTO;
 
 

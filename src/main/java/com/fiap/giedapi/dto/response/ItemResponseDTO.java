@@ -1,4 +1,4 @@
-package com.fiap.giedapi.dto;
+package com.fiap.giedapi.dto.response;
 
 public record ItemResponseDTO(
         Long id,

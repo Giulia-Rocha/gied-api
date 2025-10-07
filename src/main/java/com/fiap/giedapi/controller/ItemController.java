@@ -2,12 +2,10 @@ package com.fiap.giedapi.controller;
 
 
 import com.fiap.giedapi.domain.model.Item;
-import com.fiap.giedapi.domain.model.LoteEstoque;
 import com.fiap.giedapi.domain.vo.EstoqueInfo;
-import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
-import com.fiap.giedapi.dto.ItemEntradaDTO;
-import com.fiap.giedapi.dto.ItemResponseDTO;
-import com.fiap.giedapi.dto.ItemSaidaDTO;
+import com.fiap.giedapi.dto.response.ConsultaEstoqueDTO;
+import com.fiap.giedapi.dto.request.ItemEntradaDTO;
+import com.fiap.giedapi.dto.request.ItemSaidaDTO;
 import com.fiap.giedapi.dto.mappers.ItemMapper;
 import com.fiap.giedapi.dto.response.ItemEstoqueBaixoDTO;
 import com.fiap.giedapi.service.ItemService;
@@ -16,11 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/item")

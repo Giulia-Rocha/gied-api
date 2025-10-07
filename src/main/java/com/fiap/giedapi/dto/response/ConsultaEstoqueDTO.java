@@ -1,4 +1,4 @@
-package com.fiap.giedapi.dto;
+package com.fiap.giedapi.dto.response;
 
 import com.fiap.giedapi.domain.model.Item;
 import com.fiap.giedapi.domain.model.LoteEstoque;

@@ -1,4 +1,4 @@
-package com.fiap.giedapi.dto;
+package com.fiap.giedapi.dto.request;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
