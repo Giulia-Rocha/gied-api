@@ -3,6 +3,7 @@ package com.fiap.giedapi.controller;
 
 import com.fiap.giedapi.domain.model.Item;
 import com.fiap.giedapi.domain.model.LoteEstoque;
+import com.fiap.giedapi.domain.vo.EstoqueInfo;
 import com.fiap.giedapi.dto.ConsultaEstoqueDTO;
 import com.fiap.giedapi.dto.ItemEntradaDTO;
 import com.fiap.giedapi.dto.ItemResponseDTO;
@@ -38,7 +39,9 @@ public class ItemController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaEstoqueDTO> findById(@PathVariable Long id){
-        ConsultaEstoqueDTO response = service.consultarEstoque(id);
+        EstoqueInfo estoqueInfo = service.consultarEstoquePorID(id);
+        ConsultaEstoqueDTO response =
+                ItemMapper.toConsultaEstoqueDTO(estoqueInfo);
         return ResponseEntity.ok(response);
     }
 
@@ -48,6 +51,7 @@ public class ItemController {
      service.registrarEntrada(dto.id(), dto.quantidade(), dto.numeroLote(), dto.dataValidade());
      return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
+
     @PostMapping("/saida")
     public ResponseEntity<Map<String,String>> registrarSaida(@RequestBody ItemSaidaDTO dto){
         service.registrarSaida(dto.id(), dto.quantidade());
@@ -59,6 +63,7 @@ public class ItemController {
         );
         return  ResponseEntity.ok(response);
     }
+
     @GetMapping("/estoque-baixo")
     public ResponseEntity<List<ItemEstoqueBaixoDTO>> listarEstoqueBaixo(){
        List<Item> items = service.listarEstoqueBaixo();

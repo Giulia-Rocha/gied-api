@@ -1,5 +1,6 @@
 package com.fiap.giedapi.service;
 
+import com.fiap.giedapi.domain.vo.EstoqueInfo;
 import com.fiap.giedapi.repository.ItemDao;
 import com.fiap.giedapi.repository.LoteEstoqueDao;
 import com.fiap.giedapi.repository.MovimentacaoDao;
@@ -143,7 +144,7 @@ public class ItemService {
         );
         movimentacaoDao.salvar(mov);
     }
-    public ConsultaEstoqueDTO consultarEstoque(Long idItem){
+    public EstoqueInfo consultarEstoquePorID(Long idItem){
         //1. validação do id
         Item item = itemDao.getById(idItem);
         if(item==null){
@@ -151,7 +152,7 @@ public class ItemService {
         }
         //2.pede ao dao para buscar a lista de items com esse id
         List<LoteEstoque> lotes = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
-        return new ConsultaEstoqueDTO(item, lotes);
+        return new EstoqueInfo(item, lotes);
 
     }
     public List<Item> listarEstoque(){
