@@ -47,10 +47,16 @@ public class UsuarioService {
         return usuario;
     }
 
-    public void deletarUsuario(Long id) {
+    public boolean deletarUsuario(Long id) {
         // Primeiro, verifica se o usuário existe
-        buscarPorId(id);
-        usuarioDao.delete(id);
+        if(id != null){
+            buscarPorId(id);
+            usuarioDao.delete(id);
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     public void alterarSenha(Long usuarioId, String senhaAtual, String novaSenha) {
