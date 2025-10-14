@@ -8,7 +8,11 @@ import com.fiap.giedapi.dto.request.ItemEntradaDTO;
 import com.fiap.giedapi.dto.request.ItemSaidaDTO;
 import com.fiap.giedapi.dto.mappers.ItemMapper;
 import com.fiap.giedapi.dto.response.ItemEstoqueBaixoDTO;
+import com.fiap.giedapi.exception.EntityNotFoundException;
 import com.fiap.giedapi.service.ItemService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,12 @@ public class ItemController {
     @Autowired
     private ItemService service;
 
+    @Operation(summary = "Listar todo estoque", description = "Lista todos os" +
+            " itens do estoque")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retorna os " +
+                    "itens existentes")
+    })
     @GetMapping
     public ResponseEntity<List<Item>> listarTodoEstoque(){
         List<Item> items = service.listarEstoque();
@@ -32,14 +42,32 @@ public class ItemController {
         }
         return ResponseEntity.ok().body(items);
     }
+
+    @Operation(summary = "Buscar um item por id", description = "Busca um " +
+            "item por id no estoque")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "retorna as " +
+                    "informações do item"),
+            @ApiResponse(responseCode = "404", description = "Não existe item" +
+                    " com id inexistente")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaEstoqueDTO> findById(@PathVariable Long id){
-        EstoqueInfo estoqueInfo = service.consultarEstoquePorID(id);
-        ConsultaEstoqueDTO response =
-                ItemMapper.toConsultaEstoqueDTO(estoqueInfo);
-        return ResponseEntity.ok(response);
+            EstoqueInfo estoqueInfo = service.consultarEstoquePorID(id);
+            ConsultaEstoqueDTO response =
+            ItemMapper.toConsultaEstoqueDTO(estoqueInfo);
+            return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Registrar Entrada", description = "Registra entrada" +
+            " de itens no estoque")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Itens " +
+                    "registrados com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
+            @ApiResponse(responseCode = "404", description = "Item não encontrado no estoque"),
+            @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
+    })
     @PostMapping("/entrada")
     public ResponseEntity<ItemEntradaDTO> salvar(@RequestBody ItemEntradaDTO dto){
 
@@ -47,6 +75,15 @@ public class ItemController {
      return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Registrar saida", description = "Registra saida de " +
+            "itens do estoque")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Saída registrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
+            @ApiResponse(responseCode = "404", description = "Item não encontrado no estoque"),
+            @ApiResponse(responseCode = "409", description = "Quantidade solicitada excede o estoque disponível"),
+            @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
+    })
     @PostMapping("/saida")
     public ResponseEntity<Map<String,String>> registrarSaida(@RequestBody ItemSaidaDTO dto){
         service.registrarSaida(dto.id(), dto.quantidade());
@@ -59,6 +96,14 @@ public class ItemController {
         return  ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Listar o estoque baixo", description = "Lista os " +
+            "itens que estão com estoque abaixo do limite")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista todos os " +
+                    "itens encontrados"),
+            @ApiResponse(responseCode = "204", description = "Não existe " +
+                    "nenhum item com estoque baixo")
+    })
     @GetMapping("/estoque-baixo")
     public ResponseEntity<List<ItemEstoqueBaixoDTO>> listarEstoqueBaixo(){
        List<Item> items = service.listarEstoqueBaixo();
