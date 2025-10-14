@@ -13,6 +13,7 @@ import com.fiap.giedapi.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +70,7 @@ public class ItemController {
             @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
     })
     @PostMapping("/entrada")
-    public ResponseEntity<ItemEntradaDTO> salvar(@RequestBody ItemEntradaDTO dto){
+    public ResponseEntity<ItemEntradaDTO> salvar(@Valid @RequestBody ItemEntradaDTO dto){
 
      service.registrarEntrada(dto.id(), dto.quantidade(), dto.numeroLote(), dto.dataValidade());
      return new ResponseEntity<>(dto, HttpStatus.CREATED);
@@ -85,7 +86,7 @@ public class ItemController {
             @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
     })
     @PostMapping("/saida")
-    public ResponseEntity<Map<String,String>> registrarSaida(@RequestBody ItemSaidaDTO dto){
+    public ResponseEntity<Map<String,String>> registrarSaida(@Valid @RequestBody ItemSaidaDTO dto){
         service.registrarSaida(dto.id(), dto.quantidade());
 
         Map<String, String> response = Map.of(
