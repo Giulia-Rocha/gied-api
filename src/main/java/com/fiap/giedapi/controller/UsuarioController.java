@@ -11,6 +11,7 @@ import com.fiap.giedapi.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class UsuarioController {
                     "existe com esses dados")
     })
     @PostMapping
-    public ResponseEntity<UserResponseDTO> criarUsuario (@RequestBody UserRequestDTO userRequest){
+    public ResponseEntity<UserResponseDTO> criarUsuario (@Valid @RequestBody UserRequestDTO userRequest){
         Usuario user = UserMapper.toUser(userRequest);
         String senhaClara = userRequest.senha();
 
@@ -85,7 +86,7 @@ public class UsuarioController {
     })
     @PutMapping("/alterar-senha/{id}")
     public ResponseEntity<Void> alterarSenha(@PathVariable Long id,
-                                             @RequestBody SenhaRequestDTO dto){
+                                             @Valid @RequestBody SenhaRequestDTO dto){
         service.alterarSenha(id,dto.senhaAtual(),dto.senhaNova());
         return ResponseEntity.noContent().build();
     }
@@ -99,7 +100,7 @@ public class UsuarioController {
                     "incorretas")
     })
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
         try {
             Usuario usuario = service.autenticar(dto.login(), dto.senha());
             UserResponseDTO response = UserMapper.toDTO(usuario);
