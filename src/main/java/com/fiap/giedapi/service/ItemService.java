@@ -72,7 +72,7 @@ public class ItemService {
         // 2. Verificar se o item existe
         Item item = itemDao.getById(idItem);
         if (item == null) {
-            throw new IllegalStateException("Produto com ID " + idItem + " não encontrado no catálogo.");
+            throw new IllegalStateException("Item com ID " + idItem + " não encontrado no catálogo.");
         }
 
         // 3. Buscar lotes ordenados por validade (FIFO)
