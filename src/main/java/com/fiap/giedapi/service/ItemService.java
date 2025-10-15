@@ -1,6 +1,10 @@
 package com.fiap.giedapi.service;
 
 import com.fiap.giedapi.domain.vo.EstoqueInfo;
+import com.fiap.giedapi.exception.EmptyEntityException;
+import com.fiap.giedapi.exception.EntityNotFoundException;
+import com.fiap.giedapi.exception.IncompatibleDateException;
+import com.fiap.giedapi.exception.InsufficientStockException;
 import com.fiap.giedapi.repository.ItemDao;
 import com.fiap.giedapi.repository.LoteEstoqueDao;
 import com.fiap.giedapi.repository.MovimentacaoDao;
@@ -31,24 +35,17 @@ public class ItemService {
 
 
     public void registrarEntrada(Long idItem, int quantidade, String numeroLote, LocalDate dataValidade){
-        //validações de entrada
-        if (quantidade <= 0) {
-            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
-        }
-        if (numeroLote == null || numeroLote.trim().isEmpty()) {
-            throw new IllegalArgumentException("O número do lote é obrigatório.");
-        }
 
         // Regra de Negócio
         Item item = itemDao.getById(idItem);
         if(item==null){
-            throw new IllegalStateException("Produto com ID " + idItem + " não encontrado no catálogo. Cadastre o produto primeiro.");
+            throw new EntityNotFoundException(idItem);
         }
 
         LoteEstoque loteProcessado = loteEstoqueDao.findByItemAndId(idItem,numeroLote)
                 .map(loteExistente -> {
             if (!loteExistente.getDataValidade().equals(dataValidade)) {
-                throw new IllegalStateException("Inconsistência de dados: a data de validade do lote não corresponde à já cadastrada.");
+                throw new IncompatibleDateException("a data de validade do lote não corresponde à já cadastrada.");
             }
             loteExistente.setQuantidade(loteExistente.getQuantidade() + quantidade);
             loteEstoqueDao.atualizar(loteExistente);
@@ -64,22 +61,17 @@ public class ItemService {
 
     }
     public void registrarSaida(Long idItem, int quantidade) {
-        // 1. Validações de entrada
-        if (quantidade <= 0) {
-            throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
-        }
-
         // 2. Verificar se o item existe
         Item item = itemDao.getById(idItem);
         if (item == null) {
-            throw new IllegalStateException("Item com ID " + idItem + " não encontrado no catálogo.");
+            throw new EntityNotFoundException(idItem);
         }
 
         // 3. Buscar lotes ordenados por validade (FIFO)
         List<LoteEstoque> lotesOrdenados = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
 
         if (lotesOrdenados.isEmpty()) {
-            throw new IllegalStateException("Não há estoque disponível para este item.");
+            throw new InsufficientStockException("Não há estoque disponível para este item.");
         }
 
         // 4. Calcular estoque total
@@ -88,7 +80,7 @@ public class ItemService {
                 .sum();
 
         if (estoqueTotal < quantidade) {
-            throw new IllegalStateException(
+            throw new InsufficientStockException(
                     "Estoque insuficiente. Disponível: " + estoqueTotal +
                             ", Solicitado: " + quantidade
             );
@@ -147,7 +139,7 @@ public class ItemService {
         //1. validação do id
         Item item = itemDao.getById(idItem);
         if(item==null){
-            throw new IllegalStateException("Item com Id "+idItem+" não encontrado.");
+            throw new EntityNotFoundException(idItem);
         }
         //2.pede ao dao para buscar a lista de items com esse id
         List<LoteEstoque> lotes = loteEstoqueDao.findByItemOrderByValidadeAsc(idItem);
@@ -155,9 +147,18 @@ public class ItemService {
 
     }
     public List<Item> listarEstoque(){
-       return itemDao.listarTodos();
+       List<Item> list = itemDao.listarTodos();
+       if(list==null){
+           throw new EmptyEntityException("Não há estoque!");
+       }
+       return list;
     }
     public List<Item> listarEstoqueBaixo(){
-        return itemDao.findByEstoqueBaixo();
+        List<Item> list = itemDao.findByEstoqueBaixo();
+        if(list.isEmpty() || list == null){
+            throw new EmptyEntityException("Não existe nenhum item com " +
+                    "estoque baixo");
+        }
+        return list;
     }
 }

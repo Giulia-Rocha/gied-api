@@ -32,8 +32,6 @@ public class UsuarioController {
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Campos " +
                     "preenchidos incorretamente"),
-            @ApiResponse(responseCode = "409", description = "Um usuário já " +
-                    "existe com esses dados")
     })
     @PostMapping
     public ResponseEntity<UserResponseDTO> criarUsuario (@Valid @RequestBody UserRequestDTO userRequest){
@@ -55,13 +53,8 @@ public class UsuarioController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> buscarPorId(@PathVariable Long id){
-        try{
             UserResponseDTO responseDTO = UserMapper.toDTO(service.buscarPorId(id));
             return ResponseEntity.ok(responseDTO);
-        }catch(IllegalStateException e){
-            return ResponseEntity.notFound().build();
-        }
-
     }
 
     @Operation(summary = "Deleta um usuário", description = "Deleta um " +
@@ -74,14 +67,14 @@ public class UsuarioController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id){
-        boolean removido = service.deletarUsuario(id);
-        return removido ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        service.deletarUsuario(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary="Alterar senha do usuário", description = "Altera a " +
             "senha do usuario pelo id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "404", description = "Senha alterada " +
+            @ApiResponse(responseCode = "204", description = "Senha alterada " +
                     "com sucesso.")
     })
     @PutMapping("/alterar-senha/{id}")
@@ -96,18 +89,15 @@ public class UsuarioController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login realizado" +
                     " com sucesso"),
-            @ApiResponse(responseCode = "401", description = "Crendenciais " +
+            @ApiResponse(responseCode = "400", description = "Crendenciais " +
                     "incorretas")
     })
     @PostMapping("/login")
     public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        try {
             Usuario usuario = service.autenticar(dto.login(), dto.senha());
             UserResponseDTO response = UserMapper.toDTO(usuario);
             return ResponseEntity.ok(response);
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+
     }
 
 }

@@ -33,15 +33,12 @@ public class ItemController {
             " itens do estoque")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna os " +
-                    "itens existentes")
+                    "itens existentes"),
+            @ApiResponse(responseCode = "204", description = "Estoque vazio")
     })
     @GetMapping
     public ResponseEntity<List<Item>> listarTodoEstoque(){
-        List<Item> items = service.listarEstoque();
-        if (items.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return ResponseEntity.ok().body(items);
+        return ResponseEntity.ok().body(service.listarEstoque());
     }
 
     @Operation(summary = "Buscar um item por id", description = "Busca um " +
@@ -67,7 +64,6 @@ public class ItemController {
                     "registrados com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @ApiResponse(responseCode = "404", description = "Item não encontrado no estoque"),
-            @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
     })
     @PostMapping("/entrada")
     public ResponseEntity<ItemEntradaDTO> salvar(@Valid @RequestBody ItemEntradaDTO dto){
@@ -80,10 +76,10 @@ public class ItemController {
             "itens do estoque")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Saída registrada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
-            @ApiResponse(responseCode = "404", description = "Item não encontrado no estoque"),
-            @ApiResponse(responseCode = "409", description = "Quantidade solicitada excede o estoque disponível"),
-            @ApiResponse(responseCode = "500", description = "Erro interno ao processar a requisição")
+            @ApiResponse(responseCode = "400", description = "Estoque " +
+                    "insuficiente"),
+            @ApiResponse(responseCode = "404", description = "Item não encontrado no estoque")
+
     })
     @PostMapping("/saida")
     public ResponseEntity<Map<String,String>> registrarSaida(@Valid @RequestBody ItemSaidaDTO dto){
@@ -102,16 +98,12 @@ public class ItemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista todos os " +
                     "itens encontrados"),
-            @ApiResponse(responseCode = "204", description = "Não existe " +
+            @ApiResponse(responseCode = "404", description = "Não existe " +
                     "nenhum item com estoque baixo")
     })
     @GetMapping("/estoque-baixo")
     public ResponseEntity<List<ItemEstoqueBaixoDTO>> listarEstoqueBaixo(){
-       List<Item> items = service.listarEstoqueBaixo();
-       if (items.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-       }
-       List<ItemEstoqueBaixoDTO> response = ItemMapper.toEstoqueBaixoDTO(items);
+       List<ItemEstoqueBaixoDTO> response = ItemMapper.toEstoqueBaixoDTO(service.listarEstoqueBaixo());
        return ResponseEntity.ok(response);
 
     }

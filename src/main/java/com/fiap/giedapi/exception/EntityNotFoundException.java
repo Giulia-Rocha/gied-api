@@ -1,7 +1,7 @@
 package com.fiap.giedapi.exception;
 
 public class EntityNotFoundException extends RuntimeException {
-    public EntityNotFoundException(String message) {
-        super(message);
+    public EntityNotFoundException(Long id) {
+        super("Entidade não encontrada com o id: "+id);
     }
 }
